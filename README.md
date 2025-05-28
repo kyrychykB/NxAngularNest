@@ -17,6 +17,23 @@ This guide sets up a complete full-stack monorepo using Nx:
 * IDE: VSCode or WebStorm
 
 ---
+# NxAngularNest run current setup: 
+
+### Clone the repository and install dependencies:
+```bash
+git clone git@github.com:your-username/nx-angular-nest.git
+cd nx-angular-nest
+npm install
+```
+
+### To run both apps locally:
+```bash
+npx nx serve api       # Runs backend on http://localhost:3000
+npx nx serve web       # Runs frontend on http://localhost:4200
+```
+
+---
+# Set up Nx Monorepo with Angular and NestJS from Scratch
 
 ## 🚀 1. Create the Nx Workspace
 
