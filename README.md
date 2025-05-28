@@ -12,7 +12,7 @@ This guide sets up a complete full-stack monorepo using Nx:
 
 ## 📦 Prerequisites
 
-* Node.js ≥ 18.x
+* Node.js 22.12.0
 * npm / pnpm / yarn
 * IDE: VSCode or WebStorm
 
