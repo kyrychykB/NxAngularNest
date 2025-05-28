@@ -33,7 +33,7 @@ npx nx serve web       # Runs frontend on http://localhost:4200
 ```
 
 ---
-# Set up Nx Monorepo with Angular and NestJS from Scratch
+# Set up new Nx Monorepo with Angular and NestJS from Scratch
 
 ## 🚀 1. Create the Nx Workspace
 
