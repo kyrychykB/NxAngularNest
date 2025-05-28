@@ -1,0 +1,8 @@
+<!-- apps/web/src/app/app.component.html -->
+<ng-container *ngIf="user as u">
+  <h1>Hello from nx-angular-nest :-)</h1>
+  <p>Shared DTO user: {{ u.username }}, {{ u.email }}</p>
+</ng-container>
+
+<p *ngIf="error">{{ error }}</p>
+<router-outlet></router-outlet>

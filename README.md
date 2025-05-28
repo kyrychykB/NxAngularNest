@@ -1,96 +1,272 @@
-# NxAngularNest
+# NxAngularNest – Full Stack Monorepo (Angular + NestJS + Shared DTOs)
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+This guide sets up a complete full-stack monorepo using Nx:
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+* ✅ Angular 18 frontend with standalone components
+* ✅ NestJS backend on port `3000`
+* ✅ Shared DTOs with `class-validator` / `class-transformer`
+* ✅ Proxy setup from Angular to API for local development
+* ✅ End-to-end strict typing and validation
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+---
 
-## Run tasks
+## 📦 Prerequisites
 
-To run tasks with Nx use:
+* Node.js ≥ 18.x
+* npm / pnpm / yarn
+* IDE: VSCode or WebStorm
 
-```sh
-npx nx <target> <project-name>
+---
+
+## 🚀 1. Create the Nx Workspace
+
+```bash
+npx create-nx-workspace@latest NxAngularNest \
+  --preset=apps \
+  --workspaceType=integrated \
+  --nxCloud=skip
+cd NxAngularNest
 ```
 
-For example:
+---
 
-```sh
-npx nx build myproject
+## ⚙️ 2. Generate Angular + NestJS Apps
+
+```bash
+npx nx add @nx/angular
+npx nx g @nx/angular:app web \
+  --style=scss \
+  --routing \
+  --standalone \
+  --strict
+
+npx nx add @nx/nest
+npx nx g @nx/nest:app api --strict
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+---
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 🧱 3. Create Shared DTO/Model Library
 
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
-```sh
-npx nx add @nx/react
+```bash
+npx nx add @nx/js
+npx nx g @nx/js:lib shared-data \
+  --importPath=@shared/data \
+  --bundler=tsc \
+  --unitTestRunner=jest
 ```
 
-Use the plugin's generator to create new projects. For example, to create a new React app or library:
+---
 
-```sh
-# Generate an app
-npx nx g @nx/react:app demo
+## 📦 4. Install Shared Packages
 
-# Generate a library
-npx nx g @nx/react:lib some-lib
+```bash
+npm install class-validator class-transformer
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+---
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 📐 5. Add Path Aliases
 
-## Set up CI!
+In `tsconfig.base.json`:
 
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
+```jsonc
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@shared/data": ["libs/shared-data/src/index.ts"],
+      "@shared/data/*": ["libs/shared-data/src/*"]
+    }
+  }
+}
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+---
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## ✏️ 6. Create a Shared DTO
 
-### Step 2
+```ts
+// libs/shared-data/src/lib/user.dto.ts
+import { IsEmail, IsString } from 'class-validator';
 
-Use the following command to configure a CI workflow for your workspace:
+export class UserDto {
+  @IsString()
+  username!: string;
 
-```sh
-npx nx g ci-workflow
+  @IsEmail()
+  email!: string;
+}
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```ts
+// libs/shared-data/src/index.ts
+export * from './lib/user.dto';
+```
 
-## Install Nx Console
+---
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+## 🧩 7. Add API Endpoint
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```ts
+// apps/api/src/app/app.controller.ts
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
+import { UserDto } from '@shared/data';
 
-## Useful links
+@Controller()
+export class AppController {
+  constructor(private readonly appService: AppService) {}
 
-Learn more:
+  @Get('user')
+  getUser(): UserDto {
+    return {
+      username: 'bohdan',
+      email: 'bohdan@example.com',
+    };
+  }
+}
+```
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+---
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 🌐 8. Implement Angular Service
+
+```ts
+// apps/web/src/app/services/user.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { plainToInstance } from 'class-transformer';
+import { validateOrReject } from 'class-validator';
+import { UserDto } from '@shared/data';
+import { firstValueFrom } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class UserService {
+  constructor(private http: HttpClient) {}
+
+  async getCurrentUser(): Promise<UserDto> {
+    const raw = await firstValueFrom(this.http.get('/api/user'));
+    const user = plainToInstance(UserDto, raw);
+    await validateOrReject(user);
+    return user;
+  }
+}
+```
+
+---
+
+## 🧠 9. Build Standalone Angular Component
+
+```ts
+// apps/web/src/app/app.component.ts
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { UserService } from './services/user.service';
+import { UserDto } from '@shared/data';
+
+@Component({
+  selector: 'nx-angular-nest-root',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  templateUrl: './app.component.html',
+})
+export class AppComponent implements OnInit {
+  user?: UserDto;
+  error?: string;
+
+  constructor(private userService: UserService) {}
+
+  async ngOnInit() {
+    try {
+      this.user = await this.userService.getCurrentUser();
+    } catch (err) {
+      this.error = 'Failed to load user';
+      console.error(err);
+    }
+  }
+}
+```
+
+```html
+<!-- apps/web/src/app/app.component.html -->
+<ng-container *ngIf="user as u">
+  <h1>Hello, {{ u.username }}, {{ u.email }}</h1>
+</ng-container>
+<p *ngIf="error">{{ error }}</p>
+<router-outlet></router-outlet>
+```
+
+---
+
+## 🧰 10. Use `bootstrapApplication` with `provideHttpClient`
+
+Update `apps/web/src/main.ts`:
+
+```ts
+import { bootstrapApplication } from '@angular/platform-browser';
+import { AppComponent } from './app/app.component';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideHttpClient(withInterceptorsFromDi())
+  ]
+});
+```
+
+No need to import `HttpClientModule` in components.
+
+---
+
+## 🌍 11. Add Proxy to Route `/api/*` to NestJS (port 3000)
+
+```json
+// apps/web/proxy.conf.json
+{
+  "/api": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
+```
+
+In `apps/web/project.json`:
+
+```jsonc
+"serve": {
+  "executor": "@nx/angular:dev-server",
+  "options": {
+    "proxyConfig": "apps/web/proxy.conf.json"
+  }
+}
+```
+
+---
+
+## 🏁 12. Serve Your Apps
+
+```bash
+npx nx serve api       # http://localhost:3000
+npx nx serve web       # http://localhost:4200
+```
+
+Expected output at `http://localhost:4200`:
+
+```
+Hello, bohdan, bohdan@example.com
+```
+
+---
+
+## ✅ 13. Done!
+
+* Shared DTOs and types
+* Runtime validation with `class-validator`
+* Angular standalone components
+* Full local API + frontend connection
+
+You’re ready to expand with auth, Swagger, Docker, or CI pipelines!
